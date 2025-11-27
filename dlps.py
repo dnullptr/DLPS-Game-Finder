@@ -12,15 +12,20 @@ fw = sys.argv[1] if len(sys.argv) > 1 else None
 if fw:
     # fw should be in format "6.xx" or "7.xx" - extracting the major version as int
     FW_VERSION = int(fw.split('.')[0])
+    # delete dlps_compatible.txt if exists becuase we will create a new one
+    import os
+    if os.path.exists("dlps_compatible.txt"):
+        os.remove("dlps_compatible.txt")
+ 
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")
+#options.add_argument("--headless")
 driver = uc.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 out = dict() # should be in format {game_title: [versions]}
 
 def get_game_links_from_page():
     """Return all game post links from the current category page."""
     links = []
-    posts = driver.find_elements(By.CSS_SELECTOR, "h2.post-title a, h2.entry-title a")
+    posts = driver.find_elements(By.CSS_SELECTOR, "h2.post-title a, h2.entry-title a, article .entry-title a, .post .entry-title a")
     for p in posts:
         href = p.get_attribute("href")
         if href and "dlpsgame.com" in href:
@@ -65,21 +70,34 @@ def scrape_game_page(url):
 
 def scrape_category():
     page_num = 1
+    MAX_PAGES = 200
     while True:
-        url = CATEGORY_URL + f"/page/{page_num}" if page_num > 1 else CATEGORY_URL
+        # build a sequential /page/N/ URL (with trailing slash)
+        url = CATEGORY_URL.rstrip('/') + (f"/page/{page_num}/" if page_num > 1 else '/')
         driver.get(url)
         time.sleep(2)
+
         game_links = get_game_links_from_page()
         if not game_links:
+            print(f"No game links found on {url}; stopping")
             break
         print(f"\nPage {page_num}: found {len(game_links)} games")
         for link in game_links:
             scrape_game_page(link)
-        # check if next page exists
+
+        # safety: if requesting a page redirected back to category root, stop
         try:
-            driver.find_element(By.LINK_TEXT, str(page_num+1))
-            page_num += 1
-        except:
+            current = driver.current_url.rstrip('/')
+            root = CATEGORY_URL.rstrip('/')
+            if page_num > 1 and current == root:
+                print(f"Request for page {page_num} ({url}) redirected to category root; stopping")
+                break
+        except Exception:
+            pass
+
+        page_num += 1
+        if page_num > MAX_PAGES:
+            print(f"Reached page limit ({MAX_PAGES}); stopping")
             break
 
 try:
