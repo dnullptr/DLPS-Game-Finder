@@ -55,7 +55,7 @@ def scrape_game_page(url):
                     print(f"Compatible with your FW {fw}")
                     out[driver.title] = versions
                     with open("dlps_compatible.txt", "a") as f:
-                        f.write(f"{driver.title}: {', '.join(versions)}\n")
+                        f.write(f"{driver.title.replace('Download Game PSX PS2 PS3 PS4 PS5', '')}: {', '.join(versions)}\n")
                 else:
                     print(f"Not compatible with your FW {fw}")
         else:

@@ -1,6 +1,7 @@
 # DLPS Game FW Finder
 
-Small command-line utility (dlps.py) to locate, identify and optionally verify firmware/game files for DLPS-based projects.
+Small command-line utility (dlps.py)
+ to locate, identify and optionally verify firmware/game files for DLPS-based projects.
 
 ## Features
 - Scan a directory (or single file) for firmware/game files related to DLPS.
@@ -56,7 +57,7 @@ python dlps.py
 ```
 - Optionally provide a firmware version as the first argument (simple positional argument). When provided, the script will test compatibility against the supplied firmware major version and append compatible game titles and versions to `dlps_compatible.txt`:
 ```
-python dlps.py 6.72
+python dlps.py 6.xx
 ```
 
 What the script does
@@ -65,17 +66,9 @@ What the script does
 - Searches the extracted text for a "Working" range and optional "Backport" info.
 - If a firmware argument was provided and a compatible version is found, appends `"<title>: <versions>"` to `dlps_compatible.txt` and prints a compatibility notice.
 
-Tips & Troubleshooting
-- To change the target category or the DOM selector used to find compatibility text, edit the `CATEGORY_URL` and `SPOILER_SELECTOR` constants at the top of `dlps.py`.
-- If the script fails to find elements, the site markup may have changed; open the site manually and update `SPOILER_SELECTOR` accordingly.
-- If headless mode is blocked, remove or change the `--headless` option in `dlps.py` for debugging.
-- For development or one-off runs, run the script inside a virtual environment (see Requirements) so dependencies don't affect your system Python.
 
 Output files
 - `dlps_compatible.txt`: appended lines of compatible entries when a firmware argument is supplied.
-
-Extending the script
-- The current script uses a simple positional argument for firmware detection and basic text parsing. Consider adding `argparse` if you want to support flags (e.g., `--category`, `--output`, `--headless`, or `--max-pages`).
 
 ## Exit codes
 - 0: Success (no issues)
@@ -85,8 +78,3 @@ Extending the script
 ## Contributing
 PRs and issues welcome. Keep changes minimal and test with Python 3.8+.
 
-## License
-Add your preferred license (e.g., MIT) in a LICENSE file.
-
-## Contact
-Open an issue or PR in the repository where dlps.py is hosted.
