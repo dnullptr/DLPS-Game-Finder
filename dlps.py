@@ -18,7 +18,7 @@ if fw:
         os.remove("dlps_compatible.txt")
  
 options = webdriver.ChromeOptions()
-#options.add_argument("--headless")
+options.add_argument("--headless")
 driver = uc.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 out = dict() # should be in format {game_title: [versions]}
 
@@ -41,12 +41,19 @@ def scrape_game_page(url):
         text = el.get_attribute('textContent').strip()
         print(f"Game: {driver.title}")
         print("Raw text:", text)
-        match = re.search(r"Working\s*([0-9xX\.\s—\-]+)", text)
+        match = re.search(r"Working\s*([0-9xX\.\s\-\–—]+)", text)
+        alt_match = re.search(r"Works\s+on\s+(\d+\.\w+)", text)
+        
         #match if theres the text "Backport "
-        bp_match = re.search(r"Backport\s*([0-9xX\.\s—\-]+)", text) if match else None
-        if match:
-            raw = match.group(1) + ("-" + bp_match.group(1) if bp_match else "")
-            versions = [v.strip() for v in re.split(r"[—\-]", raw) if v.strip()]
+        bp_match = re.search(r"Backport\s*([0-9xX\.\s\-–—]+)", text) if match else None
+
+        if match or alt_match:
+            if match:
+                raw = match.group(1) + ("-" + bp_match.group(1) if bp_match else "")
+                versions = [v.strip() for v in re.split(r"[–—-]", raw) if v.strip()]
+            if alt_match:
+                versions = [alt_match.group(1) if alt_match else None]
+
             
             print("Versions:", versions)
             if fw:
@@ -65,8 +72,9 @@ def scrape_game_page(url):
                     print(f"Not compatible with your FW {fw}")
         else:
             print("No 'Working' match found")
-    except Exception:
+    except Exception as e:
         print("Spoiler span not found")
+        print("Error:", e)
 
 def scrape_category():
     page_num = 1
